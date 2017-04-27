@@ -19,10 +19,17 @@ serial_port = '/dev/tty.usbserial-DA01NW1L'
 
 
 class tetherDrive():
+    callbackKeyUp = False
+    callbackKeyDown = False
+    callbackKeyLeft = False
+    callbackKeyRight = False
+    callbackKeyLastDriveCommand = ''
+
     def __init__(self):
         self.header = 'LET DRIVE'
         self.connection, self.port = self.onConnect()
-        self.moveForward()
+        if connection is not None:
+            self.moveForward()
 
 
     # sendCommandRaw takes a string interpreted as a byte array
@@ -57,12 +64,29 @@ class tetherDrive():
     def sendCommandASCII(self, command):
         cmd = ""
         for v in command.split():
-            cmd += v.encode()
+            cmd += chr(int(v))
 
-        self.sendCommandRaw(cmd)
+        self.sendCommandRaw(cmd.encode())
 
     def moveForward(self):
         self.sendCommandASCII('131')
+        self.sendCommandASCII('140 3 1 64 16 141 3')
+
+        velocity = 0
+        velocity += VELOCITYCHANGE
+
+        rotation = 0
+
+        # compute left and right wheel velocities
+        vr = velocity + (rotation / 2)
+        vl = velocity - (rotation / 2)
+
+        # create drive command
+        cmd = ("145 0 200 0 200")
+
+        self.sendCommandASCII(cmd)
+
+
 
 
     def onConnect(self):
@@ -76,7 +100,7 @@ class tetherDrive():
                 connection = serial.Serial(port, baudrate=115200, timeout=1)
                 return 0, port
             except:
-                return 1
+                return 1, "No connection"
 
 
 @app.route('/')
