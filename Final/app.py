@@ -17,7 +17,7 @@ ROTATIONCHANGE = 300
 
 
 
-serial_port = '/dev/tty.usbserial-DA01NW1L'
+serial_port = '/dev/ttyUSB0'
 
 
 class direction():
@@ -45,6 +45,7 @@ class tetherDrive():
         try:
             if connection is not None:
                 connection.write(command)
+                print("drive")
             else:
                 print("Not connected.")
         except serial.SerialException:
@@ -80,86 +81,49 @@ class tetherDrive():
     def robotChange(self, c):
         velocity = 0
         rotation = 0
-
-        if c == '0':  # forward
-            pass
-        elif c == '1':  # forward
+        motion = False
+        
+        if c == '0':  # Stop
+            motion = True
+            print("Stop")
+        elif c == 'Up':  # forward
             velocity += VELOCITYCHANGE
-        elif c == '2':  # back
+            motion = True
+        elif c == 'Down':  # back
             velocity -= VELOCITYCHANGE
-        elif c == '3':  # left
+            motion = True
+        elif c == 'Left':  # left
             rotation += ROTATIONCHANGE
-        elif c == '4':  # right
+            motion = True
+        elif c == 'Right':  # right
             rotation -= ROTATIONCHANGE
-        elif c == 'p':  # Passive
+            motion = True 
+        elif c == 'Passive':  # Passive
             self.sendCommandASCII('128')
-        elif c == 's':  # Safe
+        elif c == 'Safe':  # Safe
             self.sendCommandASCII('131')
-        elif c == 'f':  # Full
+            print('safe')
+        elif c == 'Full':  # Full
             self.sendCommandASCII('132')
-        elif c == 'c':  # Clean
+        elif c == 'Clean':  # Clean
             self.sendCommandASCII('135')
-        elif c == 'd':  # Docmode
+        elif c == 'Docmod':  # Docmode
             self.sendCommandASCII('143')
-        elif c == 'b':  # Beep
+        elif c == 'Beep':  # Beep
             self.sendCommandASCII('140 3 1 64 16 141 3')
             print(c)
-        elif c == 'r':  # Reset
+        elif c == 'Reset':  # Reset
             self.sendCommandASCII('7')
         else:
             print(repr(c), "not handled")
 
-        vr = velocity + (rotation / 2)
-        vl = velocity - (rotation / 2)
+        if motion:
+            vr = velocity + (rotation / 2)
+            vl = velocity - (rotation / 2)
 
-        # create drive command
-        cmd = struct.pack(">Bhh", 145, int(vr), int(vl))
-        self.sendCommandRaw(cmd)
-
-    def robotModeChange(self, mode):
-        if mode == 'P':  # Passive
-            self.sendCommandASCII('128')
-        elif mode == 'S':  # Safe
-            self.sendCommandASCII('131')
-        elif mode == 'F':  # Full
-            self.sendCommandASCII('132')
-        elif mode == 'C':  # Clean
-            self.sendCommandASCII('135')
-        elif mode == 'D':  # Docmode
-            self.sendCommandASCII('143')
-        elif mode == 'SPACE':  # Beep
-            self.sendCommandASCII('140 3 1 64 16 141 3')
-        elif mode == 'R':  # Reset
-            self.sendCommandASCII('7')
-        else:
-            print(repr(mode), "not handled")
-
-    def robotMotionChange(self, d):
-        velocity = 0
-        rotation = 0
-        if d == '1':  # forward
-            velocity += VELOCITYCHANGE
-        elif d == '2':  # back
-            velocity -= VELOCITYCHANGE
-        elif d == '3':  # left
-            rotation += ROTATIONCHANGE
-        elif d == '4':  # right
-            rotation -= ROTATIONCHANGE
-        # +forward -backward
-        # +left -right
-
-        # compute left and right wheel velocities
-        vr = velocity + (rotation / 2)
-        vl = velocity - (rotation / 2)
-
-        # create drive command
-        cmd = struct.pack(">Bhh", 145, int(vr), int(vl))
-        self.sendCommandRaw(cmd)
-        time.sleep(1)
-
-
-
-
+            # create drive command
+            cmd = struct.pack(">Bhh", 145, int(vr), int(vl))
+            self.sendCommandRaw(cmd)
 
 
     def onConnect(self):
@@ -192,5 +156,5 @@ def index():
 if __name__ == '__main__':
     runRobot = tetherDrive()
     print("Robot Thread Started...")
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=False, host='0.0.0.0', threaded=True)
 
