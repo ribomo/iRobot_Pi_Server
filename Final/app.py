@@ -16,7 +16,7 @@ VELOCITYCHANGE = 200
 ROTATIONCHANGE = 300
 SPEED = 1
 
-serial_port = '/dev/ttyUSB0'
+serial_port = '/dev/tty.usbserial-DA01NW1L'
 
 
 class direction():
@@ -99,12 +99,11 @@ class tetherDrive():
             self.sendCommandASCII('128')
         elif c == 'Safe':  # Safe
             self.sendCommandASCII('131')
-            print('safe')
         elif c == 'Full':  # Full
             self.sendCommandASCII('132')
         elif c == 'Clean':  # Clean
             self.sendCommandASCII('135')
-        elif c == 'Docmod':  # Docmode
+        elif c == 'Doc':  # Docmode
             self.sendCommandASCII('143')
         elif c == 'Beep':  # Beep
             self.sendCommandASCII('140 3 1 64 16 141 3')
@@ -158,4 +157,4 @@ def index():
 if __name__ == '__main__':
     runRobot = tetherDrive()
     print("Robot Thread Started...")
-    app.run(debug=False, host='0.0.0.0', threaded=True)
+    app.run(debug=False, host='0.0.0.0', threaded=True, port='80')
