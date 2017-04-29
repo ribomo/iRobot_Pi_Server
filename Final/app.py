@@ -16,7 +16,8 @@ VELOCITYCHANGE = 200
 ROTATIONCHANGE = 300
 SPEED = 1
 
-serial_port = '/dev/tty.usbserial-DA01NW1L'
+serial_port = '/dev/ttyUSB0'
+# andysMac: tty.usbserial-DA01NW1L
 # pi: ttyUSB0
 
 
@@ -122,7 +123,7 @@ class tetherDrive():
 
         if motion:
             vr = (velocity + (rotation / 2)) * SPEED
-            vl = (velocity * SPEED - (rotation / 2)) * SPEED
+            vl = (velocity - (rotation / 2)) * SPEED
 
             # create drive command
             cmd = struct.pack(">Bhh", 145, int(vr), int(vl))
@@ -158,4 +159,4 @@ def index():
 if __name__ == '__main__':
     runRobot = tetherDrive()
     print("Robot Thread Started...")
-    app.run(debug=False, host='0.0.0.0', threaded=True, port='80')
+    app.run(debug=False, host='0.0.0.0', threaded=True, port=80)
