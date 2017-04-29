@@ -14,8 +14,7 @@ connection = None
 
 VELOCITYCHANGE = 200
 ROTATIONCHANGE = 300
-
-
+SPEED = 1
 
 serial_port = '/dev/ttyUSB0'
 
@@ -25,6 +24,7 @@ class direction():
     backward = False
     right = False
     left = False
+
 
 class tetherDrive():
     callbackKeyUp = False
@@ -36,8 +36,6 @@ class tetherDrive():
     def __init__(self):
         self.connection, self.port = self.onConnect()
 
-
-
     # sendCommandRaw takes a string interpreted as a byte array
     def sendCommandRaw(self, command):
         global connection
@@ -45,7 +43,6 @@ class tetherDrive():
         try:
             if connection is not None:
                 connection.write(command)
-                print("drive")
             else:
                 print("Not connected.")
         except serial.SerialException:
@@ -76,13 +73,13 @@ class tetherDrive():
             cmd += chr(int(v))
 
         self.sendCommandRaw(cmd.encode())
-        
-        
+
     def robotChange(self, c):
+        global SPEED
         velocity = 0
         rotation = 0
         motion = False
-        
+
         if c == '0':  # Stop
             motion = True
             print("Stop")
@@ -97,7 +94,7 @@ class tetherDrive():
             motion = True
         elif c == 'Right':  # right
             rotation -= ROTATIONCHANGE
-            motion = True 
+            motion = True
         elif c == 'Passive':  # Passive
             self.sendCommandASCII('128')
         elif c == 'Safe':  # Safe
@@ -114,17 +111,22 @@ class tetherDrive():
             print(c)
         elif c == 'Reset':  # Reset
             self.sendCommandASCII('7')
+        elif c == 'Fast':  # Change speed to fast
+            SPEED = 1
+        elif c == 'Medium':  # Change speed to Medium
+            SPEED = 0.75
+        elif c == 'Slow':  # Change speed to Slow
+            SPEED = 0.5
         else:
             print(repr(c), "not handled")
 
         if motion:
-            vr = velocity + (rotation / 2)
-            vl = velocity - (rotation / 2)
+            vr = (velocity + (rotation / 2)) * SPEED
+            vl = (velocity * SPEED - (rotation / 2)) * SPEED
 
             # create drive command
             cmd = struct.pack(">Bhh", 145, int(vr), int(vl))
             self.sendCommandRaw(cmd)
-
 
     def onConnect(self):
         global connection
@@ -136,9 +138,9 @@ class tetherDrive():
             try:
                 connection = serial.Serial(port, baudrate=115200, timeout=1)
                 print("Connected!")
-                return 0, port
+                return "Connected", port
             except:
-                return 1, "No connection"
+                return "Not connect", "No connection"
 
 
 @app.route('/<cmd>')
@@ -157,4 +159,3 @@ if __name__ == '__main__':
     runRobot = tetherDrive()
     print("Robot Thread Started...")
     app.run(debug=False, host='0.0.0.0', threaded=True)
-
