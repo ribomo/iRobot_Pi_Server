@@ -17,6 +17,7 @@ ROTATIONCHANGE = 300
 SPEED = 1
 
 serial_port = '/dev/tty.usbserial-DA01NW1L'
+# pi: ttyUSB0
 
 
 class direction():
